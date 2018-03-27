@@ -1,7 +1,7 @@
 
 
 import { getNumberOfPages, beginTournamentGrab } from "./tournament"
-
+import { getSets } from "./sets"
 const lastSlug = "tournament/nimbus-10"
 
 const main = () => {
@@ -12,9 +12,13 @@ const main = () => {
     getNumberOfPages().then((numPages) => {
         beginTournamentGrab(numPages, lastSlug).then((tournaments) => {
             console.log("Tournaments Length ", tournaments.length )
-            tournaments.forEach((tournament) => {
-                console.log(tournament.slug)
-            })
+            for(let i = 0; i < tournaments.length; i++){
+                console.log(typeof tournaments[i])
+                getSets(tournaments[i])
+                break
+                
+
+            }
         })
     }).catch((error) => {
         console.log("An error occured while fetching the first page")

@@ -1,6 +1,6 @@
 
 import request from "request"
-import { FIRST_CALL, SMASHGG_API } from "./constants"
+import { FIRST_CALL, SMASHGG_TOURNAMENT_LIST_API } from "./constants"
 
 
 export const beginTournamentGrab = (numPages, lastSlug) => {
@@ -16,32 +16,32 @@ const getTournaments = (currentPage, numPages, stopSlug, tournaments, resolve) =
         resolve(tournaments)
     } else {
         console.log("Getting Page " + currentPage + "...")
-        request.get(SMASHGG_API+currentPage, (error, response, body) =>{
+        request.get(SMASHGG_TOURNAMENT_LIST_API+currentPage, (error, response, body) =>{
             if(error){
                 throw(error)
             } else {
                 let doNext = true
                 const newTournaments = JSON.parse(body).items.entities.tournament
-                JSON.parse(body).items.entities.tournament.forEach((t) => {
+
                 for(var i = 0; i < newTournaments.length; i++){
-                    if(stopSlug === t.slug){
+                    if(stopSlug === newTournaments[i].slug){
                         resolve(tournaments)
                         doNext = false
                         break
-                    } else {
+                    } else {        
                         tournaments.push({
-                            title: t.name,
-                            slug: t.slug,
-                            start: t.startAt,
-                            end: t.endAt,
-                            city: t.city,
-                            state: t.addState,
-                            zip: t.postalCode,
-                            country: t.countryCode,
-                            venueAddress: t.venueAddress
+                            title: newTournaments[i].name,
+                            slug: newTournaments[i].slug,
+                            start: newTournaments[i].startAt,
+                            end: newTournaments[i].endAt,
+                            city: newTournaments[i].city,
+                            state: newTournaments[i].addrState,
+                            zip: newTournaments[i].postalCode,
+                            country: newTournaments[i].countryCode,
+                            venueAddress: newTournaments[i].venueAddress
                         })
                     }
-                })
+                }
                 if(doNext){
                     getTournaments(currentPage+1, numPages, stopSlug, tournaments, resolve)
                 }
