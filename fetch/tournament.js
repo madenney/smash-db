@@ -3,7 +3,7 @@ import request from "request"
 import { FIRST_CALL, SMASHGG_TOURNAMENT_LIST_API } from "./constants"
 
 
-export const beginTournamentGrab = (numPages, lastSlug) => {
+export const getNewTournaments = (numPages, lastSlug) => {
     return new Promise((resolve, reject) => {
         let tournaments = []
         getTournaments(1, numPages, lastSlug, tournaments, resolve)

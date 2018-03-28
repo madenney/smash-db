@@ -1,24 +1,24 @@
 
 
-import { getNumberOfPages, beginTournamentGrab } from "./tournament"
-import { getSets, getTournamentSets } from "./sets"
+import { getNumberOfPages, getNewTournaments } from "./tournament"
+import { getTournamentData } from "./sets"
 const lastSlug = "tournament/nimbus-10"
 
 const main = () => {
     
     console.log("Fetching Data")
 
-    getTournamentSets({
-        name: "TEST TOURNAMENT",
-        slug: 'tournament/s-ps-weekly-56'
+    getTournamentData({
+        title: "TEST TOURNAMENT",
+        slug: 'tournament/full-bloom-4'
     })
 
     // getNumberOfPages().then((numPages) => {
-    //     beginTournamentGrab(numPages, lastSlug).then((tournaments) => {
+    //     getNewTournaments(numPages, lastSlug).then((tournaments) => {
     //         console.log("Tournaments Length ", tournaments.length )
     //         for(let i = 0; i < tournaments.length; i++){
     //             console.log(typeof tournaments[i])
-    //             getTournamentSets(tournaments[i])
+    //             getTournamentData(tournaments[i])
     //             break
                 
 
