@@ -5,31 +5,15 @@ import { SMASHGG_API_URI } from "./constants"
 
 export const getTournamentData = (tournament) => {
     console.log("Getting sets for ", tournament.title)
-    console.log("SLUG", tournament.slug)
-
-    // return new Promise((resolve, reject) => {
-
-    // })
-
-    getBrackets(tournament).then((brackets) => {
-        getBracketData(tournament, brackets).then((data) => {
-            var count = 0
-            console.log(">>>>> SETS <<<<<")
-            data.sets.forEach((set) => {
-                console.log(set.winner + " won a Bo" + set.bestOf)
-                if(set.winner === "Rose"){
-                    console.log("YOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
-                    console.log(set)
-                }
+    return new Promise((resolve, reject) => {
+        getBrackets(tournament).then((brackets) => {
+            getBracketData(tournament, brackets).then((data) => {
+                resolve(data)
             })
-            console.log(">>> PLAYERS <<<<")
-            data.players.forEach((player) => {
-                console.log(player.name)
-            })
-            console.log("Number of sets: ", data.sets.length)
-            console.log("NUmber of players: ", data.players.length)
         })
     })
+
+    
     
 }
 
@@ -131,16 +115,18 @@ const combineData = (sets, entrants) => {
     }
     var count = 0
     entrants.forEach((entrant) => {
-        addWithoutRepeats(data.players, entrant.name)
+        addWithoutRepeats(data.players, entrant)
         sets.forEach((set) => {
             if( set.entrant1Id === entrant.id){
                 set.player1 = entrant.name
+                set.player1ggId = entrant.id
                 if(set.winnerId === entrant.id){
                     set.winner = entrant.name
                 } 
             }
             if( set.entrant2Id === entrant.id){
                 set.player2 = entrant.name
+                set.player2ggId = entrant.id
                 if(set.winnerId === entrant.id){
                     set.winner = entrant.name
                 } 
@@ -176,13 +162,16 @@ const removeSponsor = (entrant) => {
     return name
 }
 
-const addWithoutRepeats = (arr, value) => {
+const addWithoutRepeats = (arr, entrant) => {
     for( var i = 0; i < arr.length; i++){
-        if( arr[i].name === value ){
+        if( arr[i].name === entrant.name ){
             break
         }
     }
     if( i === arr.length){
-        arr.push({ name: value })
+        arr.push({ 
+            name: entrant.name,
+            ggId: entrant.id
+        })
     }
 }

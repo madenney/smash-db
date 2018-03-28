@@ -2,16 +2,42 @@
 
 import { getNumberOfPages, getNewTournaments } from "./tournament"
 import { getTournamentData } from "./sets"
+import { Database } from "./database"
 const lastSlug = "tournament/nimbus-10"
 
 const main = () => {
     
     console.log("Fetching Data")
 
-    getTournamentData({
-        title: "TEST TOURNAMENT",
-        slug: 'tournament/full-bloom-4'
+
+    const db = new Database()
+    db.getPlayers().then((players) => {
+       
+
+
+
+        
     })
+
+    // getTournamentData({
+    //     title: "Full Bloom",
+    //     slug: 'tournament/full-bloom-4'
+    // }).then((data) => {
+    //     data.players.forEach((player) => {
+    //         console.log(player)
+    //     })
+    // })
+
+    // getTournamentData({
+    //     title: "TEST TOURNAMENT",
+    //     slug: 'tournament/genesis-5'
+    // }).then((data) => {
+    //     data.players.forEach((player) => {
+    //         console.log(player)
+    //     })
+    // })
+
+
 
     // getNumberOfPages().then((numPages) => {
     //     getNewTournaments(numPages, lastSlug).then((tournaments) => {
