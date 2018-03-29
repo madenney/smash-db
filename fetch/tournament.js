@@ -1,6 +1,6 @@
 
 import request from "request"
-import { FIRST_CALL, SMASHGG_TOURNAMENT_LIST_API } from "./constants"
+import { FIRST_CALL, SMASHGG_TOURNAMENT_LIST_API, STOP_PAGE } from "./constants"
 
 
 export const getNewTournaments = (numPages, lastSlug) => {
@@ -12,7 +12,7 @@ export const getNewTournaments = (numPages, lastSlug) => {
 
 const getTournaments = (currentPage, numPages, stopSlug, tournaments, resolve) => {
 
-    if(currentPage > numPages || currentPage > 4){
+    if(currentPage > numPages || currentPage > STOP_PAGE){
         resolve(tournaments)
     } else {
         console.log("Getting Page " + currentPage + "...")
@@ -38,7 +38,7 @@ const getTournaments = (currentPage, numPages, stopSlug, tournaments, resolve) =
                             state: newTournaments[i].addrState,
                             zip: newTournaments[i].postalCode,
                             country: newTournaments[i].countryCode,
-                            venueAddress: newTournaments[i].venueAddress
+                            address: newTournaments[i].venueAddress
                         })
                     }
                 }
