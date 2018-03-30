@@ -16,7 +16,9 @@ const getTournaments = (currentPage, numPages, stopSlug, tournaments, resolve) =
         resolve(tournaments)
     } else {
         console.log("Getting Page " + currentPage + "...")
-        request.get(SMASHGG_TOURNAMENT_LIST_API+currentPage, (error, response, body) =>{
+        const url = SMASHGG_TOURNAMENT_LIST_API + currentPage
+        console.log(url)
+        request.get(url, (error, response, body) =>{
             if(error){
                 throw(error)
             } else {
