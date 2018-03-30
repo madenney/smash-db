@@ -2,13 +2,22 @@
 import request from "request"
 
 
-import { SMASHGG_API_URI } from "./constants"
+import { SMASHGG_API_URI, VERBOSE } from "./constants"
+import { removeExtraSymbols, containsNonUnicodeCharacters } from "./helper"
+
+import { Database } from "./database"
+const db = new Database()
 
 export const getTournamentData = (tournament, existingPlayers) => {
     return new Promise((resolve, reject) => {
-        getBrackets(tournament).then((brackets) => {
-            getBracketData(tournament, brackets, existingPlayers).then((data) => {
-                resolve(data)
+        getMeleeEventSlug(tournament).then((eventSlug) => {
+            getBrackets(tournament, eventSlug).then((brackets) => {
+                if(VERBOSE){ console.log("Number of brackets " + brackets.length)}
+                getBracketData(tournament, brackets, existingPlayers).then((data) => {
+                    resolve(data)
+                }).catch((error) => {
+                    reject(error)
+                })
             }).catch((error) => {
                 reject(error)
             })
@@ -16,14 +25,38 @@ export const getTournamentData = (tournament, existingPlayers) => {
             reject(error)
         })
     })
-
-    
-    
 }
 
-const getBrackets = (tournament) => {
+export const getMeleeEventSlug = (tournament) => {
     return new Promise((resolve, reject) => {
-        const url = SMASHGG_API_URI + "/" + tournament.slug + "/event/melee-singles?expand[]=groups"
+        const url = SMASHGG_API_URI + "/" + tournament.slug + "?expand[]=event"
+        request.get(url, (error, response, body) => {
+            if(error){
+                reject(error)
+            } else {
+                const parsedBody = JSON.parse(body)
+                if(parsedBody.entities.event){
+                    parsedBody.entities.event.forEach((event) => {
+                        if(event.typeDisplayStr === "Melee Singles"){
+                            resolve(event.slug)
+                        }
+                    })
+                } else {
+                    reject({
+                        type: "smashgg_api",
+                        message: "Unable to find melee event",
+                        slug: tournament.slug,
+                        tournament: tournament.title
+                    })
+                }
+            }
+        })
+    })
+}
+
+const getBrackets = (tournament, eventSlug) => {
+    return new Promise((resolve, reject) => {
+        const url = SMASHGG_API_URI + "/" + eventSlug + "?expand[]=groups"
         request.get(url, (error, response, body) => {
             if(error){
                 reject(error)
@@ -31,8 +64,10 @@ const getBrackets = (tournament) => {
                 const parsedBody = JSON.parse(body)
                 if(parsedBody.success === false){
                     reject({
-                        type: "smashgg",
-                        payload: "Error getting brackets for " + tournament.title
+                        type: "smashgg_api",
+                        message: "Error getting brackets",
+                        slug: tournament.slug,
+                        tournament: tournament.title
                     })
                 } else {
                     const brackets = []
@@ -47,74 +82,106 @@ const getBrackets = (tournament) => {
 }
 
 const getBracketData = (tournament, brackets, existingPlayers) => {
-
     return new Promise((highResolve, highReject) => {
         const sets = []
         const setsPromise = new Promise((resolve, reject) => {
-            getSets(0, brackets, sets, resolve)
+            getSets(0, brackets, sets, resolve, tournament)
         })
 
         const entrants = []
         const entrantsPromise = new Promise((resolve, reject) => {
-            getEntrants(0, brackets, entrants, resolve)
+            getEntrants(0, brackets, entrants, resolve, tournament)
         })
 
         Promise.all([setsPromise, entrantsPromise]).then(() => {
             const data = combineData(sets, entrants, existingPlayers)
-            console.log(data)
             highResolve(data)
         }) 
     })
 }
 
-const getSets = (num, brackets, sets, resolve) => {
+const getSets = (num, brackets, sets, resolve, tournament) => {
     if(num >= brackets.length){
         resolve()
     } else {
         const s = SMASHGG_API_URI + "/phase_group/" + brackets[num] + "?expand[]=sets"
+        if(VERBOSE){console.log(s)}
         request.get(s, (error, response, body) => {
             if(error){
                 throw(error)
             } else {
-                JSON.parse(body).entities.sets.forEach((set) => {
-                    sets.push({
-                        entrant1Id: set.entrant1Id,
-                        entrant2Id: set.entrant2Id,
-                        winnerId: set.winnerId,
-                        loserId: set.loserId,
-                        entrant1Score: set.entrant1Score,
-                        entrant2Score: set.entrant2Score,
-                        bestOf: set.bestOf
+
+                const parsedBody = JSON.parse(body)
+                if(parsedBody.entities.sets){
+                    parsedBody.entities.sets.forEach((set) => {
+                        sets.push({
+                            entrant1Id: set.entrant1Id,
+                            entrant2Id: set.entrant2Id,
+                            winnerId: set.winnerId,
+                            loserId: set.loserId,
+                            entrant1Score: set.entrant1Score,
+                            entrant2Score: set.entrant2Score,
+                            bestOf: set.bestOf
+                        })
                     })
-                })
-                getSets(num+1, brackets, sets, resolve)
+                }
+                getSets(num+1, brackets, sets, resolve, tournament)
             }
         })
     }
 }
 
-const getEntrants = (num, brackets, entrants, resolve) => {
+const getEntrants = (num, brackets, entrants, resolve, tournament) => {
     if(num >= brackets.length){
         resolve()
     } else {
         const s = SMASHGG_API_URI + "/phase_group/" + brackets[num] + "?expand[]=entrants"
+        if(VERBOSE){console.log(s)}
         request.get(s, (error, response, body) => {
             if(error){
                 throw(error)
             } else {
-                JSON.parse(body).entities.entrants.forEach((entrant) => {
-                    entrants.push({
-                        id: entrant.id,
-                        tag: removeExtraSymbols(removeSponsor(entrant))
+                let foundNonUnicodeTag = false
+                const parsedBody = JSON.parse(body)
+                if(parsedBody.entities.entrants){
+                    parsedBody.entities.entrants.forEach((entrant) => {
+                        if(!containsNonUnicodeCharacters(entrant.name)){
+                            entrants.push({
+                                id: entrant.id,
+                                tag: removeExtraSymbols(removeSponsor(entrant))
+                            })
+                        } else {
+                            if(!foundNonUnicodeTag){
+                                foundNonUnicodeTag = true
+                                entrants.push({
+                                    id: entrant.id,
+                                    tag: "NON_UNICODE_TAG"
+                                })
+                                db.logError({
+                                    type: "non_unicode",
+                                    message: "Found non-unicode tag in /phase_group/" + brackets[num],
+                                    slug: tournament.slug,
+                                    tournament: tournament.title
+                                })
+                            }
+                            
+                        }
                     })
-                })
-                getEntrants(num+1, brackets, entrants, resolve)
+                }
+                getEntrants(num+1, brackets, entrants, resolve, tournament)
             }
         })
     }
 }
 
 const combineData = (sets, entrants, existingPlayers) => {
+
+    if(VERBOSE){
+        console.log("Combining data...")
+        console.log("Number of raw sets: " + sets.length)
+        console.log("Number of raw entrants " + entrants.length)
+    }
+
     const data = {
         sets: [],
         players: []
@@ -153,7 +220,7 @@ const combineData = (sets, entrants, existingPlayers) => {
     })
 
     sets.forEach((set) => {
-        if( set.winner && set.loser && set.winnerScore !== -1 && set.loserScore !== -1 ){
+        if( set.winnerTag && set.loserTag && set.winnerScore !== -1 && set.loserScore !== -1 ){
             data.sets.push({
                 winnerTag: set.winnerTag,
                 loserTag: set.loserTag,
@@ -179,14 +246,6 @@ const removeSponsor = (entrant) => {
         }
     }
     return name
-}
-
-const removeExtraSymbols = (tag) => {
-
-    while(tag.indexOf("'") > -1){
-        tag = tag.slice(0, tag.indexOf("'")) + tag.slice(tag.indexOf("'") + 1)
-    }
-    return tag
 }
 
 const addWithoutRepeats = (arr, entrant) => {

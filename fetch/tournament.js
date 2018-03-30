@@ -1,7 +1,7 @@
 
 import request from "request"
-import { FIRST_CALL, SMASHGG_TOURNAMENT_LIST_API, STOP_PAGE } from "./constants"
-
+import { FIRST_CALL, SMASHGG_TOURNAMENT_LIST_API, STOP_PAGE, VERBOSE } from "./constants"
+import { removeExtraSymbols } from "./helper"
 
 export const getNewTournaments = (numPages, lastSlug) => {
     return new Promise((resolve, reject) => {
@@ -30,7 +30,7 @@ const getTournaments = (currentPage, numPages, stopSlug, tournaments, resolve) =
                         break
                     } else {        
                         tournaments.push({
-                            title: newTournaments[i].name,
+                            title: removeExtraSymbols(newTournaments[i].name),
                             slug: newTournaments[i].slug,
                             start: newTournaments[i].startAt,
                             end: newTournaments[i].endAt,
@@ -38,7 +38,7 @@ const getTournaments = (currentPage, numPages, stopSlug, tournaments, resolve) =
                             state: newTournaments[i].addrState,
                             zip: newTournaments[i].postalCode,
                             country: newTournaments[i].countryCode,
-                            address: newTournaments[i].venueAddress
+                            address: removeExtraSymbols(newTournaments[i].venueAddress)
                         })
                     }
                 }

@@ -5,6 +5,6 @@ export const FIRST_CALL = "https://smash.gg/api/-/gg_api./public/tournaments/sch
 
 export const SMASHGG_API_URI = "https://api.smash.gg"
 
-export const STOP_PAGE = 2
+export const STOP_PAGE = 10
 
-export var verbose = false
+export var VERBOSE = true

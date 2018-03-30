@@ -8,6 +8,10 @@ export const Database = class {
         this.conn = mysql.createConnection(connInfo)
     }
 
+    closeConnection(){
+        this.conn.end()
+    }
+
     insertNewData(data){
         return new Promise((resolve, reject) => {
 
@@ -29,6 +33,7 @@ export const Database = class {
             this.conn.query(query, (err, result) => {
                 if(err){
                     console.log("Error inserting new tournament table")
+                    console.log(query)
                     throw err
                 }
 
@@ -45,18 +50,29 @@ export const Database = class {
 
     insertNewPlayers(players){
         return new Promise((resolve, reject) => {
-            var query = "INSERT INTO `players` (`tag`) VALUES "
-            for(var i = 0; i < players.length; i++) {
-                query += "('"+players[i].tag +"'),"
-            }
-            query = query.slice(0, query.length - 1)
-
-            this.conn.query(query, (err, result) => {
-                if(err){
-                    console.log("Error inserting into players table")
-                    throw err
+            if( players.length > 0){
+                var query = "INSERT INTO `players` (`tag`) VALUES "
+                for(var i = 0; i < players.length; i++) {
+                    query += "('"+players[i].tag +"'),"
                 }
-                
+                query = query.slice(0, query.length - 1)
+
+                this.conn.query(query, (err, result) => {
+                    if(err){
+                        console.log("Error inserting into players table")
+                        console.log(query)
+                        throw err
+                    }
+                    
+                    this.conn.query("SELECT * FROM `players`", (err, rows) => {
+                        if(err){ 
+                            console.log("Error retreiving data from players table in 'insertNewPlayers' function")
+                            throw err 
+                        }
+                        resolve(rows)
+                    })
+                })
+            } else {
                 this.conn.query("SELECT * FROM `players`", (err, rows) => {
                     if(err){ 
                         console.log("Error retreiving data from players table in 'insertNewPlayers' function")
@@ -64,42 +80,61 @@ export const Database = class {
                     }
                     resolve(rows)
                 })
-            })
+            }
+            
         })
     }
 
     insertNewSets(sets, tournament, players){
         return new Promise((resolve, reject) => {
 
-            var query = "INSERT INTO `sets` (`winner_id`,`loser_id`,`winner_tag`,`loser_tag`,`tournament_id`,`best_of`,`winner_score`,`loser_score`) VALUES "
-            for(var i = 0; i < sets.length; i++) {
-                query += "("
-                for(var j = 0; j < players.length; j++){
-                    if(set.winnerTag.toLowerCase() === players[j].tag.toLowerCase()){
-                        query += "'" + players[j].id + "'"
-                        break
+            if(sets.length > 0){
+                var query = "INSERT INTO `sets` (`winner_id`,`loser_id`,`winner_tag`,`loser_tag`,`tournament_id`,`best_of`,`winner_score`,`loser_score`) VALUES "
+                sets.forEach((set) => {
+                    query += "("
+                    for(var j = 0; j < players.length; j++){
+                        if(set.winnerTag.toLowerCase() === players[j].tag.toLowerCase()){
+                            query += "'" + players[j].id + "'"
+                            break
+                        }
                     }
-                }
-                query += ","
-                for(var j = 0; j < players.length; j++){
-                    if(set.loserTag.toLowerCase() === players[j].tag.toLowerCase()){
-                        query += "'" + players[j].id + "'"
-                        break
+                    if(j === players.length){
+                        console.log("HOW IS THIS POSSIBLE")
+                        console.log(set)
+                        throw error
                     }
-                }
+                    query += ","
+                    for(var j = 0; j < players.length; j++){
+                        if(set.loserTag.toLowerCase() === players[j].tag.toLowerCase()){
+                            query += "'" + players[j].id + "'"
+                            break
+                        }
+                    }
+                    if(j === players.length){
+                        console.log("HOW IS THIS FREAKING POSSIBLE")
+                        console.log(set)
+                        throw error
+                    }
 
-                query += ",'"+set.winnerTag+"','"+set.loserTag+"','"+tournament.id+"','"+set.bestOf+"','"+set.winnerScore+"','"+set.loserScore+"'),"
-            }
-            query = query.slice(0, query.length - 1)
-            console.log(query)
+                    if(!set.winnerScore){ set.winnerScore = 0}
+                    if(!set.loserScore){ set.loserScore = 0}
+                    if(!set.bestOf){ set.bestOf = 0}
 
-            this.conn.query(query, (err, result) => {
-                if(err){
-                    console.log("Error inserting data into sets table")
-                    throw err
-                }
+                    query += ",'"+set.winnerTag+"','"+set.loserTag+"','"+tournament.id+"','"+set.bestOf+"','"+set.winnerScore+"','"+set.loserScore+"'),"
+                })
+                query = query.slice(0, query.length - 1)
+
+                this.conn.query(query, (err, result) => {
+                    if(err){
+                        console.log("Error inserting data into sets table")
+                        console.log(query)
+                        throw err
+                    }
+                    resolve()
+                })
+            } else {
                 resolve()
-            })
+            }
         })
     }
 
@@ -134,12 +169,43 @@ export const Database = class {
         })
     }
 
-    logError(message){
+    resetDatabase(){
         return new Promise((resolve, reject) => {
-            const query = "INSERT into `error_log` (`message`) VALUES ('"+message+"')"
+            const query = "TRUNCATE TABLE sets; TRUNCATE TABLE tournaments; TRUNCATE TABLE players; TRUNCATE TABLE error_log"
+            this.conn.query(query, (err, rows) => {
+                if(err){
+                    console.log("Error with resetting database query")
+                    throw err
+                }
+                resolve()
+            })
+        })
+    }
+
+    logError(error){
+        return new Promise((resolve, reject) => {
+            let query = "INSERT into `error_log` "
+            let vars = "(`type`"
+            let values = "('"+error.type+"'"
+
+            if(error.message){
+                vars += ",`message`"
+                values += ",'"+error.message+"'"
+            }
+            if(error.slug){
+                vars += ",`slug`"
+                values += ",'"+error.slug+"'"
+            }
+            if(error.tournament){
+                vars += ",`tournament`"
+                values += ",'"+error.tournament+"'"
+            }
+            
+            query += vars + ") VALUES " + values + ")"
             this.conn.query(query, (err, rows) => {
                 if(err){
                     console.log("Error occurred when inserting into error log. Wow.")
+                    console.log(query)
                     throw err
                 }
                 resolve()
