@@ -2,3 +2,4 @@ node_modules
 dist
 fetchDist
 database/connect.js
+googleAuth/client_secret.json

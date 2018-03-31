@@ -8,3 +8,32 @@ export const SMASHGG_API_URI = "https://api.smash.gg"
 export const STOP_PAGE = 10
 
 export var VERBOSE = true
+
+
+export const testSets = [
+    {
+        winner: "HungryBox",
+        loser: "Mang0",
+        tournament: "Full Bloom 4"
+    },
+    {
+        winner: "Plup",
+        loser: "Armada",
+        tournament: "Big House 7"
+    },
+    {
+        winner: "Westballz",
+        loser: "Squid",
+        tournmaent: "Smash a Power9 #56"
+    },
+    {
+        winner: "Mang0",
+        loser: "Leffen",
+        tournament: "EVO 2016"
+    },
+    {
+        winner: "Squid",
+        loser: "Ken",
+        tournament: "UCI Quarterly 1"
+    }
+]
