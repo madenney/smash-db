@@ -27,9 +27,9 @@ export const Database = class {
 
     insertNewTournament(t){
         return new Promise((resolve, reject) => {
-
-            var query = "INSERT INTO `tournaments` (`title`,`start_date`,`end_date`,`slug`,`city`,`state`,`zip`,`country`,`address`,`sets`) VALUES "
-            query += "('"+t.title+"','"+t.start+"','"+t.end+"','"+t.slug+"','"+t.city+"','"+t.state+"','"+t.zip+"','"+t.country+"','"+t.address+"','"+t.sets+"')"
+            console.log(t.image)
+            var query = "INSERT INTO `tournaments` (`title`,`start_date`,`end_date`,`slug`,`city`,`state`,`zip`,`country`,`address`,`sets`,`image_url`) VALUES "
+            query += "('"+t.title+"','"+t.start+"','"+t.end+"','"+t.slug+"','"+t.city+"','"+t.state+"','"+t.zip+"','"+t.country+"','"+t.address+"','"+t.sets+"','"+t.image+"')"
             this.conn.query(query, (err, result) => {
                 if(err){
                     console.log("Error inserting new tournament table")
@@ -89,7 +89,7 @@ export const Database = class {
         return new Promise((resolve, reject) => {
 
             if(sets.length > 0){
-                var query = "INSERT INTO `sets` (`winner_id`,`loser_id`,`winner_tag`,`loser_tag`,`tournament_id`,`best_of`,`winner_score`,`loser_score`) VALUES "
+                var query = "INSERT INTO `sets` (`winner_id`,`loser_id`,`winner_tag`,`loser_tag`,`tournament_id`,`best_of`,`winner_score`,`loser_score`,`round`) VALUES "
                 sets.forEach((set) => {
                     query += "("
                     for(var j = 0; j < players.length; j++){
@@ -120,7 +120,7 @@ export const Database = class {
                     if(!set.loserScore){ set.loserScore = 0}
                     if(!set.bestOf){ set.bestOf = 0}
 
-                    query += ",'"+set.winnerTag+"','"+set.loserTag+"','"+tournament.id+"','"+set.bestOf+"','"+set.winnerScore+"','"+set.loserScore+"'),"
+                    query += ",'"+set.winnerTag+"','"+set.loserTag+"','"+tournament.id+"','"+set.bestOf+"','"+set.winnerScore+"','"+set.loserScore+"','"+set.round+"'),"
                 })
                 query = query.slice(0, query.length - 1)
 

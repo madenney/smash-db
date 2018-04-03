@@ -60,14 +60,14 @@ const getTournamentLoop = (num, tournaments, db) => {
                     getTournamentLoop(num - 1, tournaments, db)
                 })
             }
-            
         }).catch((error) => {
-            if(error.type === "smashgg"){
+            if(error.type){
                 console.log("A smashgg error occurred. Logging and continuing...")
-                console.log(num)
                 db.logError(error).then(() => {
                     getTournamentLoop(num - 1, tournaments, db)
                 })
+            } else {
+                throw error
             }
         })
     })
