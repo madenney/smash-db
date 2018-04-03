@@ -27,7 +27,6 @@ export const Database = class {
 
     insertNewTournament(t){
         return new Promise((resolve, reject) => {
-            console.log(t.image)
             var query = "INSERT INTO `tournaments` (`title`,`start_date`,`end_date`,`slug`,`city`,`state`,`zip`,`country`,`address`,`sets`,`image_url`) VALUES "
             query += "('"+t.title+"','"+t.start+"','"+t.end+"','"+t.slug+"','"+t.city+"','"+t.state+"','"+t.zip+"','"+t.country+"','"+t.address+"','"+t.sets+"','"+t.image+"')"
             this.conn.query(query, (err, result) => {
