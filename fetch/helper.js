@@ -5,6 +5,12 @@ export const removeExtraSymbols = (s) => {
         while(s.indexOf("'") > -1){
             s = s.slice(0, s.indexOf("'")) + s.slice(s.indexOf("'") + 1)
         }
+        while(s.indexOf("\\") > -1){
+            s = s.slice(0, s.indexOf("\\")) + s.slice(s.indexOf("\\") + 1)
+        }
+        while(s.indexOf(";") > -1){
+            s = s.slice(0, s.indexOf(";")) + s.slice(s.indexOf(";") + 1)
+        }
     }
     return s
 }

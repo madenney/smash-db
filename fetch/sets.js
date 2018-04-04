@@ -6,7 +6,7 @@ import { SMASHGG_API_URI, VERBOSE } from "./constants"
 import { removeExtraSymbols, removeNonUnicode } from "./helper"
 
 import { Database } from "./database"
-const db = new Database()
+
 
 export const getTournamentData = (tournament, existingPlayers) => {
     return new Promise((resolve, reject) => {
@@ -240,6 +240,12 @@ const removeSponsor = (entrant) => {
                 }
             }
         }
+    }
+    while(name.indexOf("|") > -1 ){
+        name = name.slice(name.indexOf("|") + 1)
+    }
+    while(name[0] == " "){
+        name = name.slice(1)
     }
     return name
 }
