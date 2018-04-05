@@ -9,7 +9,7 @@
     "start": "npm run build && node dist/index.js",
     "buildFetch": "rimraf fetchDist/ && babel ./fetch/ ./database/ --out-dir fetchDist/ --ignore ./node_modules,./server",
     "fetch": "npm run buildFetch && node fetchDist/main.js",
-    "youtube": "npm run buildFetch && node fetchDist/youtube.js"
+    "youtube": "npm run buildFetch && node fetchDist/youtube2.js"
   },
   "repository": {
     "type": "git",
