@@ -3,31 +3,40 @@ import request from "request"
 
 
 import { SMASHGG_API_URI, VERBOSE } from "./constants"
-import { removeExtraSymbols, containsNonUnicodeCharacters } from "./helper"
+import { removeExtraSymbols, removeNonUnicode } from "./helper"
 
 import { Database } from "./database"
-const db = new Database()
+
 
 export const getTournamentData = (tournament, existingPlayers) => {
     return new Promise((resolve, reject) => {
-        getMeleeEventSlug(tournament).then((eventSlug) => {
-            getBrackets(tournament, eventSlug).then((brackets) => {
-                if(VERBOSE){ console.log("Number of brackets " + brackets.length)}
-                getBracketData(tournament, brackets, existingPlayers).then((data) => {
-                    resolve(data)
+        getMeleeEventSlugs(tournament).then((eventSlugs) => {
+            if(eventSlugs.length > 0){
+                getBrackets(tournament, eventSlugs).then((brackets) => {
+                    if(VERBOSE){ console.log("Number of brackets " + brackets.length)}
+                    getBracketData(tournament, brackets, existingPlayers).then((data) => {
+                        resolve(data)
+                    }).catch((error) => {
+                        reject(error)
+                    })
                 }).catch((error) => {
                     reject(error)
+                }) 
+            } else {
+                reject({
+                    type: "no_event",
+                    message: "Unable to find melee singles event",
+                    slug: tournament.slug,
+                    tournament: tournament.title
                 })
-            }).catch((error) => {
-                reject(error)
-            })
+            }
         }).catch((error) => {
             reject(error)
         })
     })
 }
 
-export const getMeleeEventSlug = (tournament) => {
+export const getMeleeEventSlugs = (tournament) => {
     return new Promise((resolve, reject) => {
         const url = SMASHGG_API_URI + "/" + tournament.slug + "?expand[]=event"
         request.get(url, (error, response, body) => {
@@ -35,12 +44,14 @@ export const getMeleeEventSlug = (tournament) => {
                 reject(error)
             } else {
                 const parsedBody = JSON.parse(body)
+                const eventSlugs = []
                 if(parsedBody.entities.event){
                     parsedBody.entities.event.forEach((event) => {
                         if(event.typeDisplayStr === "Melee Singles"){
-                            resolve(event.slug)
+                            eventSlugs.push(event.slug)
                         }
                     })
+                    resolve(eventSlugs)
                 } else {
                     reject({
                         type: "smashgg_api",
@@ -54,30 +65,31 @@ export const getMeleeEventSlug = (tournament) => {
     })
 }
 
-const getBrackets = (tournament, eventSlug) => {
-    return new Promise((resolve, reject) => {
-        const url = SMASHGG_API_URI + "/" + eventSlug + "?expand[]=groups"
+const getBracketsLoop = (num, tournament, eventSlugs, brackets, resolve) => {
+    if(num > eventSlugs.length -1){
+        resolve(brackets)
+    } else {
+        const url = SMASHGG_API_URI + "/" + eventSlugs[num] + "?expand[]=groups"
         request.get(url, (error, response, body) => {
             if(error){
                 reject(error)
             } else {
                 const parsedBody = JSON.parse(body)
-                if(parsedBody.success === false){
-                    reject({
-                        type: "smashgg_api",
-                        message: "Error getting brackets",
-                        slug: tournament.slug,
-                        tournament: tournament.title
-                    })
-                } else {
-                    const brackets = []
+                if( parsedBody.entities.groups ){
                     parsedBody.entities.groups.forEach((group) => {
                         brackets.push(group.id)
-                    })
-                    resolve(brackets)  
-                }    
+                    })  
+                }
+                getBracketsLoop(num+1, tournament, eventSlugs, brackets, resolve)    
             }
         })
+    }
+}
+
+const getBrackets = (tournament, eventSlugs) => {
+    return new Promise((resolve, reject) => {
+        const brackets = []
+        getBracketsLoop(0, tournament, eventSlugs, brackets, resolve)
     })
 }
 
@@ -121,7 +133,8 @@ const getSets = (num, brackets, sets, resolve, tournament) => {
                             loserId: set.loserId,
                             entrant1Score: set.entrant1Score,
                             entrant2Score: set.entrant2Score,
-                            bestOf: set.bestOf
+                            bestOf: set.bestOf,
+                            round: set.fullRoundText
                         })
                     })
                 }
@@ -141,31 +154,13 @@ const getEntrants = (num, brackets, entrants, resolve, tournament) => {
             if(error){
                 throw(error)
             } else {
-                let foundNonUnicodeTag = false
                 const parsedBody = JSON.parse(body)
                 if(parsedBody.entities.entrants){
                     parsedBody.entities.entrants.forEach((entrant) => {
-                        if(!containsNonUnicodeCharacters(entrant.name)){
-                            entrants.push({
-                                id: entrant.id,
-                                tag: removeExtraSymbols(removeSponsor(entrant))
-                            })
-                        } else {
-                            if(!foundNonUnicodeTag){
-                                foundNonUnicodeTag = true
-                                entrants.push({
-                                    id: entrant.id,
-                                    tag: "NON_UNICODE_TAG"
-                                })
-                                db.logError({
-                                    type: "non_unicode",
-                                    message: "Found non-unicode tag in /phase_group/" + brackets[num],
-                                    slug: tournament.slug,
-                                    tournament: tournament.title
-                                })
-                            }
-                            
-                        }
+                        entrants.push({
+                            id: entrant.id,
+                            tag: removeExtraSymbols(removeNonUnicode(removeSponsor(entrant)))
+                        })
                     })
                 }
                 getEntrants(num+1, brackets, entrants, resolve, tournament)
@@ -226,7 +221,8 @@ const combineData = (sets, entrants, existingPlayers) => {
                 loserTag: set.loserTag,
                 winnerScore: set.winnerScore,
                 loserScore: set.loserScore,
-                bestOf: set.bestOf
+                bestOf: set.bestOf,
+                round: set.round
             })
         }
 
@@ -244,6 +240,12 @@ const removeSponsor = (entrant) => {
                 }
             }
         }
+    }
+    while(name.indexOf("|") > -1 ){
+        name = name.slice(name.indexOf("|") + 1)
+    }
+    while(name[0] == " "){
+        name = name.slice(1)
     }
     return name
 }
