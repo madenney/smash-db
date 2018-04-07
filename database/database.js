@@ -12,6 +12,17 @@ export const Database = class {
         this.conn.end()
     }
 
+    query(query){
+        return new Promise((resolve, reject) => {
+            this.conn.query(query, (err, rows) => {
+                if(err){
+                    throw err
+                }
+                resolve(rows)
+            })
+        })
+    }
+
     insertNewData(data){
         return new Promise((resolve, reject) => {
 
@@ -201,6 +212,19 @@ export const Database = class {
             this.conn.query(query, (err, rows) => {
                 if(err){
                     console.log("Error with resetting database query")
+                    throw err
+                }
+                resolve()
+            })
+        })
+    }
+
+    logActivity(type){
+        return new Promise((resolve, reject) => {
+            const query = "INSERT INTO `activity_log` (`type`) VALUES ('" + type + "')"
+            this.conn.query(query, (err, rows) => {
+                if(err){
+                    console.log("Error with logActivity query")
                     throw err
                 }
                 resolve()

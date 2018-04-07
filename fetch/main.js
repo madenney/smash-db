@@ -1,13 +1,13 @@
 
-
-import { getNumberOfPages, getNewTournaments } from "./tournament"
-import { getTournamentData, getMeleeEventSlug } from "./sets"
-import { Database } from "./database"
-const lastSlug = "tournament/nimbus-10"
+import { getNumberOfPages, getNewTournaments } from "./fetch/tournament"
+import { getTournamentData, getMeleeEventSlug } from "./fetch/sets"
+import { Database } from "./database/database"
 
 const main = () => {
     
     const db = new Database()
+
+    db.logActivity("fetch_data")
 
     console.log("Getting Last Tournament in DB...")
     db.getLastTournament().then((lastTournament) => {

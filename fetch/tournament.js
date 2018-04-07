@@ -1,7 +1,7 @@
 
 import request from "request"
-import { FIRST_CALL, SMASHGG_TOURNAMENT_LIST_API, STOP_PAGE, VERBOSE } from "./constants"
-import { removeExtraSymbols, removeNonUnicode } from "./helper"
+import { FIRST_CALL, SMASHGG_TOURNAMENT_LIST_API, STOP_PAGE, VERBOSE } from "./constants/constants"
+import { removeExtraSymbols, removeNonUnicode } from "./helper/helper"
 
 export const getNewTournaments = (numPages, lastSlug) => {
     return new Promise((resolve, reject) => {

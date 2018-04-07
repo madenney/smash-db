@@ -2,14 +2,13 @@
   "name": "smash-db",
   "version": "1.0.0",
   "description": "Smash Database",
-  "main": "index.js",
+  "main": "dist/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules",
-    "start": "npm run build && node dist/index.js",
-    "buildFetch": "rimraf fetchDist/ && babel ./fetch/ ./database/ --out-dir fetchDist/ --ignore ./node_modules,./server",
-    "fetch": "npm run buildFetch && node fetchDist/main.js",
-    "youtube": "npm run buildFetch && node fetchDist/youtube.js"
+    "start": "npm run build && node dist/server/app.js",
+    "fetch": "npm run build && node dist/fetch/main.js",
+    "youtube": "npm run build && node dist/fetch/youtube.js"
   },
   "repository": {
     "type": "git",
@@ -23,6 +22,7 @@
   "homepage": "https://github.com/madenney/smash-db#readme",
   "devDependencies": {
     "babel-cli": "^6.26.0",
+    "body-parser": "^1.18.2",
     "express": "^4.16.3",
     "googleapis": "^28.0.1",
     "mysql": "^2.15.0",

@@ -2,8 +2,8 @@
 import request from "request"
 
 
-import { SMASHGG_API_URI, VERBOSE } from "./constants"
-import { removeExtraSymbols, removeNonUnicode } from "./helper"
+import { SMASHGG_API_URI, VERBOSE } from "./constants/constants"
+import { removeExtraSymbols, removeNonUnicode } from "./helper/helper"
 
 import { Database } from "./database"
 
