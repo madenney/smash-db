@@ -4,7 +4,7 @@ import request from "request"
 //import { Database } from "./database"
 //const db = new Database()
 import { apiKey } from "./apiKey"
-import { testSets } from "./constants/constants"
+import { testSets } from "./constants"
 
 const apiString = "https://www.googleapis.com/youtube/v3/search?part=snippet&key=" + apiKey
 

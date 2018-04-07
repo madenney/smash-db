@@ -1,7 +1,7 @@
 
-import { getNumberOfPages, getNewTournaments } from "./fetch/tournament"
-import { getTournamentData, getMeleeEventSlug } from "./fetch/sets"
-import { Database } from "./database/database"
+import { getNumberOfPages, getNewTournaments } from "./tournament"
+import { getTournamentData, getMeleeEventSlug } from "./sets"
+import { Database } from "../database/database"
 
 const main = () => {
     
