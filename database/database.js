@@ -168,6 +168,33 @@ export const Database = class {
         })
     }
 
+    updateSet(set, field){
+        return new Promise((resolve, reject) => {
+            const query = "UPDATE `sets` SET " + field + " = '" + set[field] + "' WHERE id = '" + set.id + "'"
+            this.conn.query(query, (err, rows) => {
+                if(err){
+                    console.log("Error with updateSet query")
+                    throw err
+                }
+                resolve()
+            })
+        })
+    }
+
+    getSetsByRank(){
+        return new Promise((resolve, reject) => {
+
+            const query = "SELECT * FROM sets"
+            this.conn.query(query, (err, rows) => {
+                if(err){
+                    console.log("Error with getSets query")
+                    throw err
+                }
+                resolve(rows)
+            })
+        })
+    }
+
     resetDatabase(){
         return new Promise((resolve, reject) => {
             const query = "TRUNCATE TABLE sets; TRUNCATE TABLE tournaments; TRUNCATE TABLE players; TRUNCATE TABLE error_log"
