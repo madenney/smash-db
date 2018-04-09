@@ -49,6 +49,16 @@ app.post('/players', function(req, res) {
     rh.getPlayers(req.body, res)
 })
 
+app.post('/tournaments', function(req, res) {
+    console.log("Getting Tournaments" )
+    rh.getTournaments(req.body, res)
+})
+
+app.post('/sets', function(req, res) {
+    console.log("Getting Sets" )
+    rh.getSets(req.body, res)
+})
+
 app.use((req, res, next) => {
     res.end(JSON.stringify({
         status: 404,

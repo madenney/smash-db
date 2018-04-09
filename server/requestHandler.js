@@ -43,6 +43,89 @@ export const RequestHandler = class {
         
     }
 
+    getTournaments(options, res){
+
+        const optionsError = this.checkOptions(options, contracts.TOURNAMENTS_CONTRACT)
+
+        if(optionsError){
+            res.end(JSON.stringify({
+                status: 400,
+                message: optionsError
+            }))
+        } else {
+
+            const q = {
+                ...contracts.DEFAULT_TOURNAMENTS_OPTIONS,
+                ...options
+            }
+
+            if(q.order === "date"){ q.order = "start_date"}
+
+            const db = new Database()
+            const query = "SELECT * FROM `tournaments` " + "ORDER BY " + q.order + " " + q.sort + " LIMIT " + q.from + ", " + q.limit  
+            db.query(query).then((data) => {
+                if( q.getTotal && q.getTotal.toLowerCase() === "true" ){
+                    const query2 = "SELECT COUNT(*) AS 'count' FROM `tournaments`"
+                    db.query(query2).then((data2) => {
+                        this.sendData(res, {
+                            tournaments: data,
+                            total: data2[0].count
+                        })
+                    })
+                } else {
+                    this.sendData(res, { tournaments: data } )
+                    db.closeConnection()
+                }
+                
+            }).catch((error) => {
+                throw error
+            })
+        }
+        
+    }
+
+    getSets(options, res){
+
+        const optionsError = this.checkOptions(options, contracts.SETS_CONTRACT)
+
+        if(optionsError){
+            res.end(JSON.stringify({
+                status: 400,
+                message: optionsError
+            }))
+        } else {
+
+            const q = {
+                ...contracts.DEFAULT_SETS_OPTIONS,
+                ...options
+            }
+
+            if(q.order === "date"){ q.order = "start_date"}
+
+            const db = new Database()
+            const query = "SELECT * FROM `sets` " + "ORDER BY " + q.order + " " + q.sort + " LIMIT " + q.from + ", " + q.limit  
+            db.query(query).then((data) => {
+                if( q.getTotal && q.getTotal.toLowerCase() === "true" ){
+                    const query2 = "SELECT COUNT(*) AS 'count' FROM `sets`"
+                    db.query(query2).then((data2) => {
+                        this.sendData(res, {
+                            sets: data,
+                            total: data2[0].count
+                        })
+                    })
+                } else {
+                    this.sendData(res, { sets: data } )
+                    db.closeConnection()
+                }
+                
+            }).catch((error) => {
+                throw error
+            })
+        }
+        
+    }
+
+
     sendData(res, data){
         res.end(JSON.stringify({
             status: 200,
