@@ -16,12 +16,24 @@ const rh = new RequestHandler()
 
 const app = express()
 
+
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
-//app.use(cors())
+
+// Catch errors thrown by bodyParser
+app.use((error, req, res, next) => {
+    if(error instanceof SyntaxError){
+        res.end(JSON.stringify({
+            status: 400,
+            message: "Error: Invalid JSON in post body"
+        }))
+    } else {
+        next()
+    }
+})
 
 // Input Validation / String Sanitization
-app.use(function(req, res, next){
+app.use((req, res, next) => {
     recursiveStringEscape(req.body)
     if( checkForHugeStrings(req.body) ){
         req.body = {
@@ -32,10 +44,17 @@ app.use(function(req, res, next){
     next()
 })
 
-
 app.post('/players', function(req, res) {
     console.log("Getting Players" )
     rh.getPlayers(req.body, res)
+})
+
+app.use((req, res, next) => {
+    res.end(JSON.stringify({
+        status: 404,
+        message: "Invalid Route - " + req.originalUrl 
+    }))
+    next()
 })
 
 // app.post('/autocomplete', function(req, res) {

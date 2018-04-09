@@ -1,4 +1,5 @@
 
+import jsStringEscape from "js-string-escape"
 
 export const removeExtraSymbols = (s) => {
     if(s){
@@ -31,7 +32,7 @@ export const recursiveStringEscape = (obj) => {
     for (var property in obj) {
         if (obj.hasOwnProperty(property)) {
             if (typeof obj[property] === "object") {
-                this.recursiveStringEscape(obj[property]);
+                recursiveStringEscape(obj[property]);
             } else {
                 obj[property] = jsStringEscape(obj[property]);
             }
@@ -43,7 +44,7 @@ export const checkForHugeStrings = (obj) => {
     for (var property in obj) {
         if (obj.hasOwnProperty(property)) {
             if (typeof obj[property] === "object") {
-                if(this.checkForHugeStrings(obj[property])){
+                if(checkForHugeStrings(obj[property])){
                     return true;
                 }
             } else {

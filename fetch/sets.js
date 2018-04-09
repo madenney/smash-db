@@ -75,7 +75,7 @@ const getBracketsLoop = (num, tournament, eventSlugs, brackets, resolve) => {
                 reject(error)
             } else {
                 const parsedBody = JSON.parse(body)
-                if( parsedBody.entities.groups ){
+                if( parsedBody.entities && parsedBody.entities.groups ){
                     parsedBody.entities.groups.forEach((group) => {
                         brackets.push(group.id)
                     })  

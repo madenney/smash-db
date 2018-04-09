@@ -16,7 +16,7 @@ export const Database = class {
         return new Promise((resolve, reject) => {
             this.conn.query(query, (err, rows) => {
                 if(err){
-                    throw err
+                    reject(err)
                 }
                 resolve(rows)
             })
