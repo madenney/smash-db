@@ -16,10 +16,10 @@ const rh = new RequestHandler()
 
 const app = express()
 
-
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(cors())
+
 // Catch errors thrown by bodyParser
 app.use((error, req, res, next) => {
     if(error instanceof SyntaxError){
@@ -57,6 +57,16 @@ app.post('/tournaments', function(req, res) {
 app.post('/sets', function(req, res) {
     console.log("Getting Sets" )
     rh.getSets(req.body, res)
+})
+
+app.post('/playerProfile', function(req, res) {
+    console.log("Getting Player Profile" )
+    rh.getPlayerProfile(req.body, res)
+})
+
+app.post('/head2head', function(req, res) {
+    console.log("Getting Head 2 Head" )
+    rh.getHead2Head(req.body, res)
 })
 
 app.use((req, res, next) => {

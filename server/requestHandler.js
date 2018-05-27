@@ -4,6 +4,116 @@ import * as contracts from "./apiContracts"
 
 export const RequestHandler = class {
 
+    getPlayerProfile(options, res){
+
+        const optionsError = this.checkOptions(options, contracts.PLAYER_PROFILE_CONTRACT)
+
+        if(optionsError){
+            res.end(JSON.stringify({
+                status: 400,
+                message: optionsError
+            }))
+
+        } else {
+
+            const q = {
+                ...contracts.DEFAULT_PLAYER_PROFILE_OPTIONS,
+                ...options
+            }
+
+            const db = new Database()
+            const query = "SELECT * FROM `players` WHERE `id` = " + options.id + " LIMIT 1"
+            db.query(query).then((player) => {
+                if( player.length === 0){
+                    res.end(JSON.stringify({
+                        status: 204,
+                        message: "No player found with id - " + options.id
+                    }))
+                    db.closeConnection()
+                } else {
+                    if( q.getHistory ){
+                        const setsQuery = "SELECT * FROM `sets` WHERE `winner_id` = " + q.id + " OR `loser_id` = " + q.id
+                        db.query(setsQuery).then((sets) => {
+                            this.sendData( res, { player, sets })
+                            db.closeConnection()
+                        })
+                    } else {
+                        this.sendData( res, { player } )
+                        db.closeConnection()
+                    }
+                }
+
+            }).catch((error) => {
+                throw error
+            })
+        }
+    }
+
+    getHead2Head( options, res ){
+
+        const optionsError = this.checkOptions(options, contracts.HEAD2HEAD_CONTRACT)
+
+        if(optionsError){
+            res.end(JSON.stringify({
+                status: 400,
+                message: optionsError
+            }))
+
+        } else {
+
+            const db = new Database()
+            const data = {}
+            const promises = []
+            const nums = ['1','2']
+            nums.forEach((num) => {
+                promises.push( new Promise((resolve, reject) => {
+                    const query = "SELECT * FROM `players` WHERE `id` = " + options["id" + num] + " LIMIT 1"
+                    db.query(query).then((player) => {
+                        data["player" + num] = player
+                        resolve()
+                    })
+                }))
+            })
+
+            Promise.all(promises).then(() => {
+
+                if( data.player1.length === 0 ){
+                    res.end(JSON.stringify({
+                        status: 204,
+                        message: "No player found with id - " + options.id1
+                    }))
+                    db.closeConnection()
+                    return
+                } else {
+                    data.player1 = data.player1[0]
+                }
+
+                if( data.player2.length === 0 ){
+                    res.end(JSON.stringify({
+                        status: 204,
+                        message: "No player found with id - " + options.id2
+                    }))
+                    db.closeConnection()
+                    return
+                } else {
+                    data.player2 = data.player2[0]
+                }
+
+                const h2hQuery = "SELECT * FROM `sets` WHERE ( `winner_id` = '" + data.player1.id + 
+                    "' AND `loser_id` = '" + data.player2.id + "' ) OR ( `winner_id` = '" + data.player2.id +
+                    "' AND `loser_id` = '" + data.player1.id + "' )"
+                db.query(h2hQuery).then((sets) => {
+                  this.sendData(res, {
+                      player1: data.player1,
+                      player2: data.player2,
+                      sets
+                  })
+                  db.closeConnection()
+                })
+            })
+        }
+    }
+
     getPlayers(options, res){
 
         const optionsError = this.checkOptions(options, contracts.PLAYERS_CONTRACT)
@@ -30,6 +140,7 @@ export const RequestHandler = class {
                             players: data,
                             total: data2[0].count
                         })
+                        db.closeConnection()
                     })
                 } else {
                     this.sendData(res, { players: data } )
@@ -71,6 +182,7 @@ export const RequestHandler = class {
                             tournaments: data,
                             total: data2[0].count
                         })
+                        db.closeConnection()
                     })
                 } else {
                     this.sendData(res, { tournaments: data } )
@@ -134,6 +246,13 @@ export const RequestHandler = class {
     }
 
     checkOptions(options, contract){
+        // Check for required options
+        for( const option in contract){
+            if(contract[option].isRequired && !options[option]){
+                return "Error: Missing required option - '" + option + "'"
+            }
+        }
+        
         for( const option in options){
 
             if(!contract[option]){

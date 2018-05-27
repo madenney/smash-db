@@ -1,4 +1,33 @@
 
+// ------------------------------------ Player Profile -----------------------------------------------------
+
+export const DEFAULT_PLAYER_PROFILE_OPTIONS = {
+    getHistory: false
+}
+
+export const PLAYER_PROFILE_CONTRACT = {
+    id: {
+        type: "number",
+        isRequired: true
+    },
+    getHistory: {
+        type: "bool"
+    }
+}
+
+// ------------------------------------ HEAD2HEAD -----------------------------------------------------
+
+export const HEAD2HEAD_CONTRACT = {
+    id1: {
+        type: "number",
+        isRequired: true
+    },
+    id2: {
+        type: "number",
+        isRequired: true
+    }
+}
+
 // ------------------------------------ Players -----------------------------------------------------
 
 export const DEFAULT_PLAYERS_OPTIONS = {
