@@ -5,7 +5,7 @@
 // var helper = new Helper.Helper();
 
 import express from "express"
-//import cors from "cors"
+import cors from "cors"
 import path from "path"
 import bodyParser from "body-parser"
 
@@ -19,7 +19,7 @@ const app = express()
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
-
+app.use(cors())
 // Catch errors thrown by bodyParser
 app.use((error, req, res, next) => {
     if(error instanceof SyntaxError){
