@@ -69,6 +69,11 @@ app.post('/head2head', function(req, res) {
     rh.getHead2Head(req.body, res)
 })
 
+app.post('/search', function(req, res) {
+    console.log("Search" )
+    rh.search(req.body, res)
+})
+
 app.use((req, res, next) => {
     res.end(JSON.stringify({
         status: 404,

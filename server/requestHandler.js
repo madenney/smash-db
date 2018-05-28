@@ -4,6 +4,30 @@ import * as contracts from "./apiContracts"
 
 export const RequestHandler = class {
 
+    search(options, res){
+
+        const optionsError = this.checkOptions( options, contracts.SEARCH_CONTRACT)
+
+        if(optionsError){
+            res.end(JSON.stringify({
+                status: 400,
+                message: optionsError
+            }))
+        } else {
+            const q = {
+                ...contracts.DEFAULT_SEARCH_OPTIONS,
+                ...options
+            }
+
+            const db = new Database()
+            const query = "SELECT * FROM `players` WHERE `tag` LIKE '" + options.input + "%' LIMIT " + q.limit
+            db.query(query).then((players) => {
+                this.sendData(res, {players})
+                db.closeConnection()
+            })
+        }
+    }
+
     getPlayerProfile(options, res){
 
         const optionsError = this.checkOptions(options, contracts.PLAYER_PROFILE_CONTRACT)
@@ -278,7 +302,7 @@ export const RequestHandler = class {
                     if( typeof options[option] !== "string"){
                         return "Error: Invalid data type given for option - '" + option + " '  Expected a string."
                     }
-                    if( contract[option].options.indexOf(options[option]) < 0){
+                    if( contract[option].options && contract[option].options.indexOf(options[option]) < 0){
                         return "Error: Invalid value for option - '" + option + "'  Expected one of the following: " + contract[option].options
                     }
                     break

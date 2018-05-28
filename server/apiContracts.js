@@ -1,4 +1,45 @@
 
+
+// ------------------------------------ Search -----------------------------------------------------
+
+export const DEFAULT_SEARCH_OPTIONS = {
+    limit: 10,
+    sort: "ASC",
+    order: "rank",
+    players: true,
+    tournaments: false,
+    regions: false
+}
+
+export const SEARCH_CONTRACT = {
+    input: {
+        type: "string",
+        isRequired: true
+    },
+    limit: {
+        type: "number",
+        minimum: 1,
+        maximum: 999999
+    },
+    sort: {
+        type: "string",
+        options: ["ASC", "DESC"]
+    },
+    order: {
+        type: "string",
+        options: ["rank","id","tag"]
+    },
+    players: {
+        type: "bool"
+    },
+    tournaments: {
+        type: "bool"
+    },
+    regions: {
+        type: "bool"
+    }
+}
+
 // ------------------------------------ Player Profile -----------------------------------------------------
 
 export const DEFAULT_PLAYER_PROFILE_OPTIONS = {
