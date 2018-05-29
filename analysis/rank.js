@@ -28,7 +28,7 @@ export const newRank = (db) => {
                 const EL = RL / ( RW + RL )
 
                 winner.rank = winner.rank + 32 * ( 1 - EW )
-                loser.rank = loser.rank + 32 * ( 1 - EL )
+                loser.rank = loser.rank + 32 * ( 0 - EL )
             })
 
             console.log("Finished Ranking")

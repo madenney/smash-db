@@ -23,7 +23,7 @@ export const RequestHandler = class {
             const query = "SELECT * FROM `" + q.category + "` WHERE " 
                 + ( q.category === "players" ? "`tag`" : "`title`" ) + " LIKE '" 
                 + options.input + "%' LIMIT " + q.limit
-            console.log(query)
+
             db.query(query).then((data) => {
                 this.sendData(res, {data})
                 db.closeConnection()
