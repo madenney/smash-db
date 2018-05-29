@@ -8,7 +8,8 @@
     "build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules",
     "start": "npm run build && node dist/server/app.js",
     "fetch": "npm run build && node dist/fetch/main.js",
-    "youtube": "npm run build && node dist/fetch/youtube.js"
+    "youtube": "npm run build && node dist/fetch/youtube.js",
+    "rank": "npm run build && node dist/analysis/main.js"
   },
   "repository": {
     "type": "git",

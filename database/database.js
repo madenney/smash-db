@@ -192,9 +192,50 @@ export const Database = class {
         })
     }
 
-    getSetsByRank(){
+    updatePlayer(player, field){
         return new Promise((resolve, reject) => {
+            const query = "UPDATE `players` SET " + field + " = '" + player[field] + "' WHERE id = '" + player.id + "'"
+            this.conn.query(query, (err, rows) => {
+                if(err){
+                    console.log("Error with updatePlayer query")
+                    throw err
+                }
+                resolve()
+            })
+        })
+    }
 
+    multipleUpdate(table, arr, field){
+        return new Promise((resolve, reject) => {
+            this.multipleUpdateLoop(table, arr, field, 0, resolve)
+        })
+    }
+
+    multipleUpdateLoop(table, arr, field, index, resolve){
+        if(index === arr.length){
+            resolve()
+        } else {
+            this.updateRow(table, arr[index], field).then(() => {
+                this.multipleUpdateLoop( table, arr, field, index + 1, resolve)
+            })
+        }
+    }
+
+    updateRow(table, item, field){
+        return new Promise((resolve, reject) => {
+            const query = "UPDATE `" + table + "` SET " + field + " = '" + item[field] + "' WHERE id = '" + item.id + "'"
+            this.conn.query(query, (err, rows) => {
+                if(err){
+                    console.log("Error with update query")
+                    throw err
+                }
+                resolve()
+            })
+        })
+    }
+
+    getSets(){
+        return new Promise((resolve, reject) => {
             const query = "SELECT * FROM sets"
             this.conn.query(query, (err, rows) => {
                 if(err){

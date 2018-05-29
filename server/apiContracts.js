@@ -6,9 +6,7 @@ export const DEFAULT_SEARCH_OPTIONS = {
     limit: 10,
     sort: "ASC",
     order: "rank",
-    players: true,
-    tournaments: false,
-    regions: false
+    category: "players"
 }
 
 export const SEARCH_CONTRACT = {
@@ -29,14 +27,9 @@ export const SEARCH_CONTRACT = {
         type: "string",
         options: ["rank","id","tag"]
     },
-    players: {
-        type: "bool"
-    },
-    tournaments: {
-        type: "bool"
-    },
-    regions: {
-        type: "bool"
+    category: {
+        type: "string",
+        options: ["players", "tournaments"]
     }
 }
 
