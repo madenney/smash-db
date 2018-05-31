@@ -61,11 +61,11 @@ export const RequestHandler = class {
                     if( q.getHistory ){
                         const setsQuery = "SELECT * FROM `sets` WHERE `winner_id` = " + q.id + " OR `loser_id` = " + q.id
                         db.query(setsQuery).then((sets) => {
-                            this.sendData( res, { player, sets })
+                            this.sendData( res, { player: player[0], sets })
                             db.closeConnection()
                         })
                     } else {
-                        this.sendData( res, { player } )
+                        this.sendData( res, { player: player[0] } )
                         db.closeConnection()
                     }
                 }
